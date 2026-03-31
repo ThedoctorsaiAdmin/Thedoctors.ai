@@ -76,7 +76,7 @@ export default function Sidebar() {
         </div>
         <div className="flex-1 min-w-0">
           <div className="text-sm font-semibold truncate">{user?.name || 'Doctor'}</div>
-          <div className="text-xs capitalize" style={{ color: '#94A3B8' }}>{user?.designation || user?.role}</div>
+          <div className="text-xs capitalize" style={{ color: '#94A3B8' }}>{user?.role}</div>
         </div>
         <div className="w-2 h-2 rounded-full flex-shrink-0"
              style={{ background: '#22c55e', boxShadow: '0 0 0 2px #dcfce7' }} />
@@ -131,3 +131,4 @@ export default function Sidebar() {
     </aside>
   )
 }
+
