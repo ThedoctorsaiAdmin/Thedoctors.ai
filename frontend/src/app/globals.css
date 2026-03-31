@@ -1,0 +1,457 @@
+@import url('https://fonts.googleapis.com/css2?family=League+Spartan:wght@400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── CSS Variables ── */
+:root {
+  --primary:      #5CE1E6;
+  --primary-dk:   #3ABFC4;
+  --primary-dkr:  #2A9EA3;
+  --primary-lt:   #F0FEFF;
+  --primary-mid:  #A8F0F2;
+  --accent:       #F54858;
+  --accent-dk:    #D93344;
+  --accent-lt:    #FFF0F1;
+  --bg:           #F4F7F9;
+  --surface:      #FFFFFF;
+  --surface2:     #F8FAFB;
+  --border:       #E4EAF0;
+  --border2:      #CBD5E1;
+  --text:         #0F172A;
+  --text2:        #475569;
+  --text3:        #94A3B8;
+  --green:        #059669;
+  --green-lt:     #ECFDF5;
+  --amber:        #D97706;
+  --amber-lt:     #FFFBEB;
+  --red:          #DC2626;
+  --red-lt:       #FEF2F2;
+  --sidebar-w:    244px;
+}
+
+/* ── Base ── */
+* { box-sizing: border-box; }
+body {
+  font-family: 'League Spartan', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 13px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+
+/* ── Layout ── */
+.app-layout {
+  display: flex;
+  min-height: 100vh;
+}
+.sidebar {
+  width: var(--sidebar-w);
+  height: 100vh;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0; left: 0;
+  z-index: 200;
+  overflow: hidden;
+}
+.sidebar-nav {
+  flex: 1;
+  padding: 8px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border2) transparent;
+}
+.main-content {
+  margin-left: var(--sidebar-w);
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+.topbar {
+  height: 56px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  padding: 0 22px;
+  gap: 12px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+.page-content {
+  padding: 20px 22px;
+  flex: 1;
+}
+
+/* ── Nav Items ── */
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 7px 9px;
+  border-radius: 8px;
+  cursor: pointer;
+  color: var(--text2);
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.15s;
+  background: none;
+  border: none;
+  width: 100%;
+  text-align: left;
+  font-family: 'League Spartan', sans-serif;
+  text-decoration: none;
+}
+.nav-item:hover { background: var(--bg); color: var(--text); }
+.nav-item.active {
+  background: var(--primary-lt);
+  color: var(--primary-dkr);
+  font-weight: 600;
+}
+.nav-section {
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--text3);
+  padding: 9px 9px 3px;
+  margin-top: 3px;
+}
+
+/* ── Cards ── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  overflow: hidden;
+}
+.card-header {
+  padding: 13px 18px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.card-title { font-size: 13.5px; font-weight: 600; }
+.card-body { padding: 16px 18px; }
+
+/* ── Buttons ── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: 8px;
+  font-family: 'League Spartan', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  transition: all 0.15s;
+  line-height: 1;
+  white-space: nowrap;
+}
+.btn-primary {
+  background: var(--primary);
+  color: #fff;
+}
+.btn-primary:hover { background: var(--primary-dk); }
+.btn-accent {
+  background: var(--accent);
+  color: #fff;
+}
+.btn-accent:hover { background: var(--accent-dk); }
+.btn-ghost {
+  background: var(--surface);
+  color: var(--text2);
+  border: 1px solid var(--border);
+}
+.btn-ghost:hover { background: var(--bg); }
+.btn-sm { padding: 5px 10px; font-size: 12px; }
+.btn-xs { padding: 3px 8px; font-size: 11px; }
+
+/* ── Pills / Badges ── */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 9px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.pill-primary { background: var(--primary-lt); color: var(--primary-dkr); }
+.pill-accent  { background: var(--accent-lt);  color: var(--accent-dk); }
+.pill-green   { background: var(--green-lt);   color: #065f46; }
+.pill-amber   { background: var(--amber-lt);   color: #92400e; }
+.pill-red     { background: var(--red-lt);     color: #991b1b; }
+.pill-gray    { background: #f1f5f9;           color: #475569; }
+.pill-blue    { background: #eff6ff;           color: #1e40af; }
+.pill-purple  { background: #f5f3ff;           color: #5b21b6; }
+
+.badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 20px;
+  min-width: 18px;
+  text-align: center;
+  display: inline-block;
+}
+.badge-accent  { background: var(--accent);  color: #fff; }
+.badge-primary { background: var(--primary); color: #fff; }
+.badge-amber   { background: var(--amber);   color: #fff; }
+
+/* ── Forms ── */
+.field { margin-bottom: 12px; }
+.field label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text2);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  margin-bottom: 5px;
+}
+.field input, .field textarea, .field select {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 11px;
+  font-family: 'League Spartan', sans-serif;
+  font-size: 13px;
+  color: var(--text);
+  background: #fff;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.field input:focus, .field textarea:focus, .field select:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(92, 225, 230, 0.12);
+}
+.field textarea { resize: vertical; min-height: 72px; }
+
+/* ── Toggle ── */
+.toggle {
+  width: 40px; height: 22px;
+  background: var(--border);
+  border-radius: 20px;
+  cursor: pointer;
+  position: relative;
+  border: none;
+  flex-shrink: 0;
+  transition: background 0.2s;
+}
+.toggle.on { background: var(--primary); }
+.toggle::after {
+  content: '';
+  position: absolute;
+  width: 16px; height: 16px;
+  background: #fff;
+  border-radius: 50%;
+  top: 3px; left: 3px;
+  transition: transform 0.2s;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+.toggle.on::after { transform: translateX(18px); }
+
+/* ── Table ── */
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; }
+thead th {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: var(--text3);
+  padding: 10px 14px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface2);
+  white-space: nowrap;
+}
+tbody td {
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+  font-size: 13px;
+}
+tbody tr:last-child td { border-bottom: none; }
+tbody tr:hover td { background: var(--surface2); }
+
+/* ── Stat Cards ── */
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px 18px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  transition: box-shadow 0.2s, transform 0.2s;
+  cursor: default;
+}
+.stat-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.07); transform: translateY(-1px); }
+.stat-val {
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  line-height: 1;
+  font-family: 'League Spartan', sans-serif;
+}
+.stat-lbl { font-size: 11.5px; color: var(--text2); margin-top: 3px; }
+
+/* ── Modal ── */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 999;
+}
+.modal {
+  background: var(--surface);
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+  width: 90%; max-width: 560px;
+  max-height: 90vh; overflow-y: auto;
+}
+.modal-lg { max-width: 720px; }
+.modal-header {
+  padding: 18px 22px 14px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.modal-title { font-size: 15px; font-weight: 600; }
+.modal-body { padding: 20px 22px; }
+.modal-footer {
+  padding: 14px 22px;
+  border-top: 1px solid var(--border);
+  display: flex; justify-content: flex-end; gap: 8px;
+}
+
+/* ── Toast ── */
+.toast {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px 16px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+  display: flex; align-items: center; gap: 10px;
+  font-size: 13px; font-weight: 500;
+  min-width: 280px;
+  border-left: 3px solid var(--primary);
+}
+.toast-success { border-left-color: var(--green); }
+.toast-error   { border-left-color: var(--accent); }
+.toast-warning { border-left-color: var(--amber); }
+
+/* ── Chip / Filter ── */
+.chip {
+  padding: 4px 11px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text2);
+  transition: all 0.15s;
+}
+.chip:hover { border-color: var(--primary); color: var(--primary-dkr); }
+.chip.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+
+/* ── Avatar ── */
+.avatar {
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; flex-shrink: 0;
+}
+.avatar-sm { width: 30px; height: 30px; font-size: 10px; }
+.avatar-md { width: 36px; height: 36px; font-size: 12px; }
+.avatar-lg { width: 52px; height: 52px; font-size: 16px; }
+.avatar-xl { width: 72px; height: 72px; font-size: 22px; }
+
+/* ── Progress Bar ── */
+.progress-bar { height: 6px; background: var(--border); border-radius: 6px; overflow: hidden; }
+.progress-fill { height: 100%; border-radius: 6px; transition: width 0.5s ease; }
+
+/* ── OPD / IPD Badges ── */
+.opd-badge { background: #dbeafe; color: #1e40af; padding: 2px 8px; border-radius: 20px; font-size: 10px; font-weight: 700; }
+.ipd-badge { background: #fce7f3; color: #9d174d; padding: 2px 8px; border-radius: 20px; font-size: 10px; font-weight: 700; }
+
+/* ── AI Session ── */
+.ai-session-bar {
+  background: linear-gradient(120deg, #0f172a, #1e293b);
+  border-radius: 12px;
+  padding: 14px 18px;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  border: 1px solid #334155;
+}
+.ai-pulse {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  background: rgba(92, 225, 230, 0.15);
+  border: 2px solid var(--primary);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.ai-pulse.active { animation: pulseRing 1.4s ease-out infinite; }
+.ai-pulse.recording {
+  border-color: var(--accent);
+  background: rgba(245, 72, 88, 0.15);
+  animation: pulseRingRed 1s ease-out infinite;
+}
+@keyframes pulseRingRed {
+  0%   { box-shadow: 0 0 0 0 rgba(245, 72, 88, 0.4); }
+  70%  { box-shadow: 0 0 0 10px rgba(245, 72, 88, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(245, 72, 88, 0); }
+}
+
+/* ── Bed Map ── */
+.bed-cell {
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 10px;
+  cursor: pointer;
+  transition: all 0.15s;
+  position: relative;
+  min-height: 70px;
+}
+.bed-cell.occupied  { border-color: var(--accent);  background: var(--accent-lt); }
+.bed-cell.available { border-color: #6ee7b7; background: #f0fdf4; }
+.bed-cell.reserved  { border-color: #fbbf24; background: #fffbeb; }
+.bed-cell.cleaning  { border-color: #94a3b8; background: var(--surface2); }
+
+/* ── Animations ── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-up { animation: fadeUp 0.25s ease both; }
+
+/* ── Print ── */
+@media print {
+  .sidebar, .topbar, .no-print { display: none !important; }
+  .main-content { margin-left: 0 !important; }
+  .page-content { padding: 0 !important; }
+}

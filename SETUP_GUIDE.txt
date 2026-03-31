@@ -1,0 +1,246 @@
+# 🚀 TheDoctors.Ai — Step by Step Setup Guide
+# Windows Setup — Follow exactly in order
+
+===============================================================
+STEP 1 — Install Node.js (5 minutes)
+===============================================================
+
+1. Open your browser
+2. Go to: https://nodejs.org
+3. Click the big green "LTS" button to download
+4. Run the downloaded installer (.msi file)
+5. Click Next → Next → Next → Install (keep all defaults)
+6. Click Finish
+
+7. Press Windows key + R → type "cmd" → press Enter
+8. Type this and press Enter:
+   node --version
+
+   You should see: v20.x.x ✅
+   
+9. Also type:
+   npm --version
+   
+   You should see: 10.x.x ✅
+
+===============================================================
+STEP 2 — Install Git (3 minutes)
+===============================================================
+
+1. Go to: https://git-scm.com/download/win
+2. Download and install (keep all defaults)
+3. In cmd, type: git --version
+   You should see: git version 2.x.x ✅
+
+===============================================================
+STEP 3 — Install VS Code (3 minutes)
+===============================================================
+
+1. Go to: https://code.visualstudio.com
+2. Download and install
+3. This is where you'll write and view all code
+
+===============================================================
+STEP 4 — Create Supabase Database (5 minutes)
+===============================================================
+
+1. Go to: https://supabase.com
+2. Click "Start your project" → Sign up with GitHub or email
+3. Click "New Project"
+4. Fill in:
+   - Name: thedoctors-ai
+   - Database Password: create a strong password (SAVE THIS!)
+   - Region: Southeast Asia (Singapore) — closest to India
+5. Click "Create new project"
+6. Wait 2 minutes for it to set up
+
+7. Once ready, click Settings (gear icon on left)
+8. Click "Database"
+9. Scroll to "Connection string" → select "URI"
+10. Copy the connection string — it looks like:
+    postgresql://postgres:[YOUR-PASSWORD]@db.xxxx.supabase.co:5432/postgres
+11. Replace [YOUR-PASSWORD] with the password you created in step 4
+
+===============================================================
+STEP 5 — Setup the Project (10 minutes)
+===============================================================
+
+1. Extract the zip file to a folder, e.g.:
+   C:\Projects\thedoctors-ai\
+
+2. Open VS Code
+3. File → Open Folder → select C:\Projects\thedoctors-ai\
+
+4. Open Terminal in VS Code:
+   Press Ctrl + ` (backtick key, top left of keyboard)
+
+--- SETUP BACKEND ---
+
+5. In the terminal, type:
+   cd backend
+
+6. Install packages:
+   npm install
+
+7. Create your .env file:
+   copy .env.example .env
+
+8. Open .env file (click it in VS Code left panel)
+   Replace the DATABASE_URL line with your Supabase URL from Step 4:
+   DATABASE_URL="postgresql://postgres:YOURPASSWORD@db.XXXXX.supabase.co:5432/postgres"
+   
+   Also change JWT_SECRET to any random text, e.g.:
+   JWT_SECRET="thedoctors2025supersecretkey"
+   JWT_REFRESH_SECRET="thedoctorsrefresh2025key"
+
+9. Generate Prisma client:
+   npx prisma generate
+
+10. Create all database tables:
+    npx prisma db push
+
+11. Add demo data:
+    npx ts-node prisma/seed.ts
+
+12. Start the backend:
+    npm run dev
+
+    You should see:
+    ╔════════════════════════════════════╗
+    ║   TheDoctors.Ai API — Running      ║
+    ║   http://localhost:4000            ║
+    ╚════════════════════════════════════╝
+    
+    ✅ Backend is running!
+
+--- SETUP FRONTEND ---
+
+13. Open a NEW terminal tab in VS Code (click + button in terminal)
+
+14. Go to frontend folder:
+    cd frontend
+
+15. Install packages:
+    npm install
+
+16. Create env file:
+    copy .env.example .env.local
+
+17. Start the frontend:
+    npm run dev
+
+    You should see:
+    ▲ Next.js 14.0.4
+    - Local: http://localhost:3000
+    
+    ✅ Frontend is running!
+
+===============================================================
+STEP 6 — Open the App
+===============================================================
+
+1. Open your browser
+2. Go to: http://localhost:3000
+
+3. You will see the TheDoctors.Ai login page!
+
+4. Try logging in:
+   Clinic Code: TDA-2045
+   Email:       dr.james@thedoctors.ai
+   Password:    password123
+
+5. For Super Admin:
+   Go to: http://localhost:3000/superadmin/login
+   Email:    admin@thedoctors.ai
+   Password: superadmin123
+
+===============================================================
+STEP 7 — Deploy to Internet (Vercel + Railway)
+===============================================================
+
+--- Deploy Frontend to Vercel ---
+
+1. Go to: https://vercel.com → Sign up with GitHub
+2. Click "New Project"
+3. Import your project from GitHub
+   (First push to GitHub: see GITHUB_SETUP.md)
+4. Set Root Directory: frontend
+5. Add environment variable:
+   NEXT_PUBLIC_API_URL = https://your-backend.railway.app/api
+6. Click Deploy
+7. Your frontend will be live at: https://thedoctors-ai.vercel.app
+
+--- Deploy Backend to Railway ---
+
+1. Go to: https://railway.app → Sign up
+2. Click "New Project" → "Deploy from GitHub repo"
+3. Select your repository
+4. Set Root Directory: backend
+5. Add all environment variables from your .env file
+6. Railway will auto-detect Node.js and deploy
+7. Your backend URL will be: https://your-backend.railway.app
+
+===============================================================
+STEP 8 — Custom Domain (Optional)
+===============================================================
+
+1. In Vercel → Settings → Domains
+2. Add: thedoctors.ai (or whatever domain you have)
+3. Follow DNS instructions
+
+===============================================================
+TROUBLESHOOTING
+===============================================================
+
+Problem: "node is not recognized"
+Fix: Restart your PC after installing Node.js
+
+Problem: "Cannot connect to database"  
+Fix: Check your DATABASE_URL in backend/.env matches Supabase exactly
+
+Problem: "Port 3000 already in use"
+Fix: In terminal type: npx kill-port 3000
+
+Problem: "npm install fails"
+Fix: Try: npm install --legacy-peer-deps
+
+Problem: Frontend shows blank page
+Fix: Check that backend is running on port 4000 first
+
+===============================================================
+DEMO ACCOUNTS
+===============================================================
+
+Clinic: TDA-2045
+├── Admin:        dr.james@thedoctors.ai    / password123
+├── Doctor:       dr.anil@thedoctors.ai     / password123
+└── Receptionist: rekha@thedoctors.ai       / password123
+
+Super Admin:      admin@thedoctors.ai       / superadmin123
+
+===============================================================
+ADDING AI FEATURES LATER
+===============================================================
+
+When you're ready to add AI:
+
+1. Get OpenAI API key from: https://platform.openai.com
+2. Add to backend/.env:
+   OPENAI_API_KEY=sk-proj-xxxxxxxxxxxx
+
+3. Restart backend: npm run dev
+4. AI consultation (Whisper + GPT-4o) will automatically enable!
+
+For WhatsApp (WATI):
+1. Sign up at: https://www.wati.io
+2. Add to backend/.env:
+   WATI_API_KEY=your-wati-key
+   WATI_BASE_URL=https://live-mt-server.wati.io/xxxxx
+
+For Google Calendar:
+1. Create project at: https://console.cloud.google.com
+2. Enable Calendar API
+3. Create OAuth credentials
+4. Add to backend/.env:
+   GOOGLE_CLIENT_ID=xxxx
+   GOOGLE_CLIENT_SECRET=xxxx

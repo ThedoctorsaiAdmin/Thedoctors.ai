@@ -1,0 +1,122 @@
+TheDoctors.Ai — Complete Setup Guide
+Follow every step exactly. Takes about 30 minutes total.
+
+═══════════════════════════════════════
+STEP 1 — INSTALL NODE.JS (5 minutes)
+═══════════════════════════════════════
+1. Go to: https://nodejs.org
+2. Click the LTS button (big green button)
+3. Run the installer — click Next all the way through
+4. RESTART your computer when done
+5. Open Command Prompt (Windows key → type cmd → Enter)
+6. Type: node --version  → should show v20.x.x
+7. Type: npm --version   → should show 10.x.x
+
+═══════════════════════════════════════
+STEP 2 — INSTALL GIT (3 minutes)
+═══════════════════════════════════════
+1. Go to: https://git-scm.com/download/win
+2. Download and run installer — click Next all the way
+3. Close and reopen Command Prompt
+4. Type: git --version → should show git version 2.x.x
+
+═══════════════════════════════════════
+STEP 3 — SETUP SUPABASE DATABASE
+═══════════════════════════════════════
+1. Go to: https://supabase.com → Sign up
+2. Click New Project
+3. Name: thedoctors-ai
+4. Password: pick a strong password — SAVE IT!
+5. Region: Southeast Asia (Singapore)
+6. Wait 2 minutes for setup
+7. Go to Settings → Database → Connection string → URI
+8. Copy the URL (looks like: postgresql://postgres:PASSWORD@db.xxx.supabase.co:5432/postgres)
+9. SAVE THIS URL — needed in Step 5
+
+═══════════════════════════════════════
+STEP 4 — EXTRACT PROJECT FILES
+═══════════════════════════════════════
+1. Extract thedoctors-project.zip
+2. You'll see: frontend/ and backend/ folders
+3. Place anywhere e.g. C:\Projects\thedoctors-project\
+
+═══════════════════════════════════════
+STEP 5 — SETUP BACKEND
+═══════════════════════════════════════
+Open Command Prompt:
+
+  cd C:\Projects\thedoctors-project\backend
+  copy .env.example .env
+  notepad .env
+
+In .env, replace DATABASE_URL with your Supabase URL from Step 3.
+Save and close Notepad.
+
+  npm install
+  npx prisma generate
+  npx prisma migrate dev --name init
+  npx prisma db seed
+  npm run dev
+
+You should see:
+  TheDoctors.Ai API — Running at http://localhost:4000
+KEEP THIS WINDOW OPEN!
+
+═══════════════════════════════════════
+STEP 6 — SETUP FRONTEND
+═══════════════════════════════════════
+Open a NEW Command Prompt window:
+
+  cd C:\Projects\thedoctors-project\frontend
+  copy .env.example .env.local
+  npm install
+  npm run dev
+
+You should see: Local: http://localhost:3000
+
+═══════════════════════════════════════
+STEP 7 — LOGIN TO THE APP
+═══════════════════════════════════════
+Open Chrome and go to: http://localhost:3000
+
+Demo Login:
+  Clinic Code : TDA-2045
+  Email       : dr.james@thedoctors.ai
+  Password    : password123
+
+Super Admin Login: http://localhost:3000/superadmin/login
+  Email    : admin@thedoctors.ai
+  Password : superadmin123
+
+═══════════════════════════════════════
+STEP 8 — DEPLOY TO INTERNET
+═══════════════════════════════════════
+Frontend → Vercel.com (free)
+Backend  → Railway.app (free)
+Database → Supabase.com (already done)
+
+Full guide at: https://thedoctors.ai/docs
+
+═══════════════════════════════════════
+STEP 9 — ENABLE AI FEATURES
+═══════════════════════════════════════
+When ready, add to backend/.env:
+  OPENAI_API_KEY=sk-your-key    ← enables Whisper + GPT-4o
+  WATI_API_KEY=your-key         ← enables WhatsApp reminders
+  GOOGLE_CLIENT_ID=your-id      ← enables Calendar sync
+
+Then restart backend: Ctrl+C then npm run dev
+
+═══════════════════════════════════════
+TROUBLESHOOTING
+═══════════════════════════════════════
+"node is not recognized"    → Restart computer after Node install
+"npm install fails"         → Run cmd as Administrator
+"Migration fails"           → Check DATABASE_URL in .env
+"Blank page"                → Check backend is running at localhost:4000
+"Can't login"               → Make sure you ran: npx prisma db seed
+
+Quick Links:
+  Frontend:    http://localhost:3000
+  Backend:     http://localhost:4000
+  DB Studio:   cd backend && npx prisma studio

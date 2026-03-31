@@ -1,0 +1,652 @@
+// TheDoctors.Ai — Complete Database Schema
+// Multi-tenant: every table has clinicId
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────────────────────
+// PLATFORM LEVEL (Super Admin)
+// ─────────────────────────────────────────
+
+model Plan {
+  id         String   @id @default(uuid())
+  name       String // Free, Starter, Pro, Enterprise
+  price      Float
+  maxDoctors Int
+  aiMinutes  Int // -1 = unlimited
+  features   String[] // list of enabled features
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  clinics    Clinic[]
+}
+
+model Clinic {
+  id          String    @id @default(uuid())
+  code        String    @unique // TDA-2045
+  name        String
+  type        String // General, Hospital, Dental etc
+  address     String?
+  city        String?
+  state       String?
+  pinCode     String?
+  phone       String?
+  email       String?
+  website     String?
+  gstin       String?
+  regNumber   String? // MCI number
+  logoUrl     String?
+  planId      String
+  plan        Plan      @relation(fields: [planId], references: [id])
+  status      String    @default("active") // active, suspended, trial
+  trialEndsAt DateTime?
+  aiMinUsed   Int       @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Relations
+  users         User[]
+  patients      Patient[]
+  appointments  Appointment[]
+  consultations Consultation[]
+
+  pharmacyOrders  PharmacyOrder[]
+  stockItems      StockItem[]
+  vendors         Vendor[]
+  ipdAdmissions   IpdAdmission[]
+  labOrders       LabOrder[]
+  insuranceClaims InsuranceClaim[]
+  accounts        AccountEntry[]
+  invoices        Invoice[]
+  notifications   Notification[]
+  services        Service[]
+  otSchedules     OtSchedule[]
+
+  @@map("clinics")
+}
+
+model SuperAdmin {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      String   @default("superadmin")
+  createdAt DateTime @default(now())
+
+  @@map("super_admins")
+}
+
+// ─────────────────────────────────────────
+// USERS & AUTH
+// ─────────────────────────────────────────
+
+model User {
+  id                  String    @id @default(uuid())
+  clinicId            String
+  clinic              Clinic    @relation(fields: [clinicId], references: [id])
+  email               String
+  password            String
+  name                String
+  role                String // admin, doctor, receptionist, pharmacist, nurse, accountant, lab
+  designation         String?
+  qualification       String?
+  regNumber           String? // Medical registration
+  specialisation      String?
+  phone               String?
+  avatarUrl           String?
+  permissions         Json      @default("{}")
+  googleCalendarEmail String?
+  isActive            Boolean   @default(true)
+  deactivatedAt       DateTime?
+  deactivatedBy       String?
+  deactivationReason  String?
+  lastLoginAt         DateTime?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  // Relations
+  consultations Consultation[]
+  appointments  Appointment[]  @relation("DoctorAppointments")
+  otSchedules   OtSchedule[]
+
+  @@unique([clinicId, email])
+  @@map("users")
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@map("refresh_tokens")
+}
+
+// ─────────────────────────────────────────
+// PATIENTS
+// ─────────────────────────────────────────
+
+model Patient {
+  id                 String    @id @default(uuid())
+  clinicId           String
+  clinic             Clinic    @relation(fields: [clinicId], references: [id])
+  patientCode        String // TDA-0001
+  name               String
+  dob                DateTime?
+  age                Int?
+  gender             String?
+  phone              String
+  email              String?
+  address            String?
+  city               String?
+  bloodGroup         String?
+  conditions         String[] // Known conditions
+  drugAllergies      String[]
+  foodAllergies      String[]
+  familyHistory      String[]
+  smoking            String?
+  alcohol            String?
+  // Insurance
+  insuranceProvider  String?
+  insurancePolicyNo  String?
+  insuranceValidTill DateTime?
+  insuredName        String?
+  whatsappOptIn      Boolean   @default(true)
+  isActive           Boolean   @default(true)
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  // Relations
+  appointments    Appointment[]
+  consultations   Consultation[]
+  ipdAdmissions   IpdAdmission[]
+  labOrders       LabOrder[]
+  insuranceClaims InsuranceClaim[]
+  pharmacyOrders  PharmacyOrder[]
+
+  @@unique([clinicId, patientCode])
+  @@map("patients")
+}
+
+// ─────────────────────────────────────────
+// APPOINTMENTS
+// ─────────────────────────────────────────
+
+model Appointment {
+  id            String   @id @default(uuid())
+  clinicId      String
+  clinic        Clinic   @relation(fields: [clinicId], references: [id])
+  patientId     String
+  patient       Patient  @relation(fields: [patientId], references: [id])
+  doctorId      String
+  doctor        User     @relation("DoctorAppointments", fields: [doctorId], references: [id])
+  date          DateTime
+  timeSlot      String // "09:30"
+  duration      Int      @default(15) // minutes
+  type          String   @default("in-person") // in-person, video
+  serviceId     String?
+  reason        String?
+  status        String   @default("scheduled") // scheduled, confirmed, completed, cancelled, no-show
+  isFollowUp    Boolean  @default(false)
+  notes         String?
+  googleEventId String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("appointments")
+}
+
+model Service {
+  id       String  @id @default(uuid())
+  clinicId String
+  clinic   Clinic  @relation(fields: [clinicId], references: [id])
+  name     String
+  price    Float
+  duration Int // minutes
+  isActive Boolean @default(true)
+
+  @@map("services")
+}
+
+// ─────────────────────────────────────────
+// CONSULTATION & PRESCRIPTION
+// ─────────────────────────────────────────
+
+model Consultation {
+  id        String   @id @default(uuid())
+  clinicId  String
+  clinic    Clinic   @relation(fields: [clinicId], references: [id])
+  opdNumber String // OPD/25/03/0487
+  patientId String
+  patient   Patient  @relation(fields: [patientId], references: [id])
+  doctorId  String
+  doctor    User     @relation(fields: [doctorId], references: [id])
+  date      DateTime @default(now())
+
+  // Vitals
+  temperature Float?
+  bpSystolic  Int?
+  bpDiastolic Int?
+  pulse       Int?
+  spo2        Float?
+  weight      Float?
+  height      Float?
+  bloodSugar  Float?
+
+  // Observations
+  chiefComplaint String?
+  complaintDays  Int?
+  examination    String?
+  cvs            String?
+  chest          String?
+  diagnosis      String?
+  icd10Code      String?
+  smoking        String?
+  alcohol        String?
+  diet           String?
+  bowel          String?
+  sleep          String?
+
+  // AI fields
+  aiTranscript       String?
+  aiSessionDuration  Int? // seconds
+  aiLanguageDetected String?
+  isAiFilled         Boolean   @default(false)
+  isVerified         Boolean   @default(false)
+  verifiedAt         DateTime?
+  verifiedBy         String?
+
+  // Diet & Advice
+  dietInstructions String?
+  exercise         String?
+  advice           String?
+
+  // Next Visit
+  nextVisitDays  Int?
+  nextVisitUnit  String? // Days, Weeks, Months
+  nextVisitNotes String?
+
+  // Status
+  status      String    @default("active") // active, completed, draft
+  completedAt DateTime?
+
+  prescription Prescription?
+  labOrders    LabOrder[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  @@map("consultations")
+}
+
+model Prescription {
+  id              String       @id @default(uuid())
+  clinicId        String
+  rxNumber        String // RX-1049
+  consultationId  String       @unique
+  consultation    Consultation @relation(fields: [consultationId], references: [id])
+  patientId       String
+  medicines       Json // array of medicine objects
+  isVerified      Boolean      @default(false)
+  isSentToPatient Boolean      @default(false)
+  sentAt          DateTime?
+  remindersActive Boolean      @default(false)
+  createdAt       DateTime     @default(now())
+
+  pharmacyOrders PharmacyOrder[]
+
+  @@map("prescriptions")
+}
+
+// ─────────────────────────────────────────
+// PHARMACY & STOCK
+// ─────────────────────────────────────────
+
+model PharmacyOrder {
+  id             String        @id @default(uuid())
+  clinicId       String
+  clinic         Clinic        @relation(fields: [clinicId], references: [id])
+  rxNumber       String // RX-1049
+  patientId      String
+  patient        Patient       @relation(fields: [patientId], references: [id])
+  prescriptionId String?
+  prescription   Prescription? @relation(fields: [prescriptionId], references: [id])
+  medicines      Json
+  totalAmount    Float         @default(0)
+  source         String        @default("in-clinic") // in-clinic, outside
+  status         String        @default("pending") // pending, dispensed, partial, cancelled
+  dispensedAt    DateTime?
+  createdAt      DateTime      @default(now())
+
+  @@map("pharmacy_orders")
+}
+
+model StockItem {
+  id          String    @id @default(uuid())
+  clinicId    String
+  clinic      Clinic    @relation(fields: [clinicId], references: [id])
+  name        String
+  category    String?
+  quantity    Int       @default(0)
+  minQuantity Int       @default(10) // alert threshold
+  unitPrice   Float     @default(0)
+  batchNumber String?
+  expiryDate  DateTime?
+  vendorId    String?
+  vendor      Vendor?   @relation(fields: [vendorId], references: [id])
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("stock_items")
+}
+
+model Vendor {
+  id            String   @id @default(uuid())
+  clinicId      String
+  clinic        Clinic   @relation(fields: [clinicId], references: [id])
+  name          String
+  contactPerson String?
+  phone         String?
+  email         String?
+  gstin         String?
+  address       String?
+  speciality    String?
+  paymentTerms  String?
+  status        String   @default("active")
+  createdAt     DateTime @default(now())
+
+  stockItems     StockItem[]
+  purchaseOrders PurchaseOrder[]
+
+  @@map("vendors")
+}
+
+model PurchaseOrder {
+  id           String    @id @default(uuid())
+  clinicId     String
+  poNumber     String // PO-0042
+  vendorId     String
+  vendor       Vendor    @relation(fields: [vendorId], references: [id])
+  items        Json
+  totalAmount  Float     @default(0)
+  status       String    @default("pending") // pending, in-transit, received, cancelled
+  expectedDate DateTime?
+  createdAt    DateTime  @default(now())
+
+  @@map("purchase_orders")
+}
+
+// ─────────────────────────────────────────
+// IPD
+// ─────────────────────────────────────────
+
+model Ward {
+  id       String @id @default(uuid())
+  clinicId String
+  name     String // Cardiac Ward, General Ward, ICU
+  beds     Bed[]
+
+  @@map("wards")
+}
+
+model Bed {
+  id                 String  @id @default(uuid())
+  wardId             String
+  ward               Ward    @relation(fields: [wardId], references: [id])
+  bedNumber          String // 1A, 1B
+  status             String  @default("available") // available, occupied, reserved, cleaning
+  currentAdmissionId String?
+
+  @@map("beds")
+}
+
+model IpdAdmission {
+  id                 String    @id @default(uuid())
+  clinicId           String
+  clinic             Clinic    @relation(fields: [clinicId], references: [id])
+  ipdNumber          String // IPD/25/03/0124
+  patientId          String
+  patient            Patient   @relation(fields: [patientId], references: [id])
+  admittingDoctorId  String
+  wardId             String?
+  bedId              String?
+  bedNumber          String?
+  wardName           String?
+  admissionType      String    @default("elective") // elective, emergency, referral
+  admittingDiagnosis String?
+  finalDiagnosis     String?
+  icd10Code          String?
+  insuranceProvider  String?
+  insurancePolicyNo  String?
+  admittedAt         DateTime  @default(now())
+  dischargedAt       DateTime?
+  expectedStayDays   Int?
+  status             String    @default("active") // active, discharged
+  dischargeSummary   String?
+  dischargeCondition String?
+  followUpDate       DateTime?
+  followUpNotes      String?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  progressNotes IpdProgressNote[]
+  labOrders     LabOrder[]
+
+  @@map("ipd_admissions")
+}
+
+model IpdProgressNote {
+  id           String       @id @default(uuid())
+  admissionId  String
+  admission    IpdAdmission @relation(fields: [admissionId], references: [id])
+  day          Int
+  date         DateTime     @default(now())
+  doctorId     String
+  temperature  Float?
+  bpSystolic   Int?
+  bpDiastolic  Int?
+  pulse        Int?
+  spo2         Float?
+  observations String?
+  plan         String?
+  createdAt    DateTime     @default(now())
+
+  @@map("ipd_progress_notes")
+}
+
+// ─────────────────────────────────────────
+// LAB & INVESTIGATIONS
+// ─────────────────────────────────────────
+
+model LabOrder {
+  id              String        @id @default(uuid())
+  clinicId        String
+  clinic          Clinic        @relation(fields: [clinicId], references: [id])
+  labNumber       String // LAB/25/03/0091
+  patientId       String
+  patient         Patient       @relation(fields: [patientId], references: [id])
+  consultationId  String?
+  consultation    Consultation? @relation(fields: [consultationId], references: [id])
+  ipdAdmissionId  String?
+  ipdAdmission    IpdAdmission? @relation(fields: [ipdAdmissionId], references: [id])
+  doctorId        String
+  tests           Json // array of test objects
+  urgency         String        @default("routine") // routine, urgent, stat
+  fastingRequired Boolean       @default(false)
+  notes           String?
+  status          String        @default("pending") // pending, collected, processing, ready, critical
+  results         Json?
+  hasCritical     Boolean       @default(false)
+  resultAt        DateTime?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@map("lab_orders")
+}
+
+// ─────────────────────────────────────────
+// INSURANCE
+// ─────────────────────────────────────────
+
+model InsuranceCompany {
+  id              String   @id @default(uuid())
+  clinicId        String
+  name            String
+  type            String // private, govt, psu, tpa
+  tpaName         String?
+  claimEmail      String?
+  portalUrl       String?
+  helpline        String?
+  preAuthSlaHours Int      @default(4)
+  cashless        Boolean  @default(true)
+  reimbursement   Boolean  @default(true)
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+
+  claims InsuranceClaim[]
+
+  @@map("insurance_companies")
+}
+
+model InsuranceClaim {
+  id                 String            @id @default(uuid())
+  clinicId           String
+  clinic             Clinic            @relation(fields: [clinicId], references: [id])
+  claimNumber        String // CLM/25/03/0041
+  patientId          String
+  patient            Patient           @relation(fields: [patientId], references: [id])
+  insuranceCompanyId String?
+  insuranceCompany   InsuranceCompany? @relation(fields: [insuranceCompanyId], references: [id])
+  claimType          String            @default("cashless") // cashless, reimbursement
+  visitType          String            @default("opd") // opd, ipd
+  linkedVisitNumber  String? // OPD or IPD number
+  policyNumber       String?
+  diagnosis          String?
+  icd10Code          String?
+  claimAmount        Float             @default(0)
+  approvedAmount     Float?
+  copayAmount        Float?
+  status             String            @default("pending") // pending, submitted, approved, partial, rejected, appealed
+  submittedAt        DateTime?
+  settledAt          DateTime?
+  rejectionReason    String?
+  notes              String?
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+
+  @@map("insurance_claims")
+}
+
+// ─────────────────────────────────────────
+// ACCOUNTS & INVOICES
+// ─────────────────────────────────────────
+
+model AccountEntry {
+  id              String   @id @default(uuid())
+  clinicId        String
+  clinic          Clinic   @relation(fields: [clinicId], references: [id])
+  date            DateTime @default(now())
+  type            String // consultation, pharmacy, ipd, purchase, refund
+  patientId       String?
+  patientName     String?
+  doctorName      String?
+  description     String
+  amount          Float
+  isCredit        Boolean // true = income, false = expense
+  paymentMode     String   @default("cash") // cash, card, upi, insurance, neft
+  insuranceStatus String?
+  invoiceId       String?
+  status          String   @default("paid") // paid, pending, overdue
+  createdAt       DateTime @default(now())
+
+  @@map("account_entries")
+}
+
+model Invoice {
+  id            String   @id @default(uuid())
+  clinicId      String
+  clinic        Clinic   @relation(fields: [clinicId], references: [id])
+  invoiceNumber String // INV/25/03/0041
+  patientId     String?
+  patientName   String
+  patientPhone  String?
+  doctorName    String?
+  linkedVisit   String?
+  items         Json // line items with HSN codes
+  subtotal      Float
+  cgst          Float    @default(0)
+  sgst          Float    @default(0)
+  total         Float
+  paymentMode   String   @default("cash")
+  status        String   @default("paid")
+  gstnSubmitted Boolean  @default(false)
+  createdAt     DateTime @default(now())
+
+  @@map("invoices")
+}
+
+// ─────────────────────────────────────────
+// OT MODULE
+// ─────────────────────────────────────────
+
+model OtSchedule {
+  id             String    @id @default(uuid())
+  clinicId       String
+  clinic         Clinic    @relation(fields: [clinicId], references: [id])
+  otRoom         String // OT 1, OT 2
+  patientName    String
+  ipdAdmissionId String?
+  procedure      String
+  surgeonId      String
+  surgeon        User      @relation(fields: [surgeonId], references: [id])
+  anaesthetist   String?
+  scheduledAt    DateTime
+  durationHours  Float     @default(2)
+  bloodGroup     String?
+  bloodUnits     Int?
+  preOpNotes     String?
+  status         String    @default("scheduled") // scheduled, in-progress, completed, cancelled
+  completedAt    DateTime?
+  otNotes        String?
+  createdAt      DateTime  @default(now())
+
+  @@map("ot_schedules")
+}
+
+// ─────────────────────────────────────────
+// NOTIFICATIONS & CHAT
+// ─────────────────────────────────────────
+
+model Notification {
+  id        String   @id @default(uuid())
+  clinicId  String
+  clinic    Clinic   @relation(fields: [clinicId], references: [id])
+  userId    String?
+  type      String // appointment, claim, lab, rx, system
+  title     String
+  body      String
+  isRead    Boolean  @default(false)
+  actionUrl String?
+  createdAt DateTime @default(now())
+
+  @@map("notifications")
+}
+
+model ChatMessage {
+  id         String   @id @default(uuid())
+  clinicId   String
+  channel    String // general, pharmacy, ipd, direct:userId
+  senderId   String
+  senderName String
+  message    String
+  fileUrl    String?
+  createdAt  DateTime @default(now())
+
+  @@map("chat_messages")
+}
