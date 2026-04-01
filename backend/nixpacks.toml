@@ -1,0 +1,5 @@
+[phases.build]
+cmds = ['npm install', 'npx prisma generate', 'npx tsc --skipLibCheck']
+
+[start]
+cmd = 'node dist/index.js'
