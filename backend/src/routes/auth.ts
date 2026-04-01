@@ -12,7 +12,7 @@ const generateTokens = (userId: string, role: string) => {
   const accessToken = jwt.sign(
     { userId, role },
     process.env.JWT_SECRET!,
-    { expiresIn: process.env.JWT_EXPIRES_IN || '8h' }
+    { expiresIn: "8h" }
   )
   const refreshToken = jwt.sign(
     { userId, role },
@@ -216,3 +216,4 @@ router.get('/me', authenticate, async (req: AuthRequest, res: Response) => {
 })
 
 export default router
+
