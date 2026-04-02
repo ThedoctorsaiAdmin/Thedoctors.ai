@@ -56,7 +56,7 @@ router.post('/verify-clinic', async (req: Request, res: Response) => {
 
     res.json({ success: true, clinic })
   } catch (error) {
-    res.status(500).json({ success: false, message: 'Server error' })
+    res.status(500).json({ success: false, message: error instanceof Error ? error.message : String(error) })
   }
 })
 
@@ -123,7 +123,7 @@ router.post('/login', async (req: Request, res: Response) => {
       }
     })
   } catch (error) {
-    res.status(500).json({ success: false, message: 'Server error' })
+    res.status(500).json({ success: false, message: error instanceof Error ? error.message : String(error) })
   }
 })
 
@@ -150,7 +150,7 @@ router.post('/superadmin/login', async (req: Request, res: Response) => {
       admin: { id: admin.id, name: admin.name, email: admin.email }
     })
   } catch (error) {
-    res.status(500).json({ success: false, message: 'Server error' })
+    res.status(500).json({ success: false, message: error instanceof Error ? error.message : String(error) })
   }
 })
 
@@ -193,7 +193,7 @@ router.post('/logout', authenticate, async (req: AuthRequest, res: Response) => 
     }
     res.json({ success: true, message: 'Logged out successfully' })
   } catch (error) {
-    res.status(500).json({ success: false, message: 'Server error' })
+    res.status(500).json({ success: false, message: error instanceof Error ? error.message : String(error) })
   }
 })
 
@@ -211,9 +211,10 @@ router.get('/me', authenticate, async (req: AuthRequest, res: Response) => {
     })
     res.json({ success: true, user })
   } catch (error) {
-    res.status(500).json({ success: false, message: 'Server error' })
+    res.status(500).json({ success: false, message: error instanceof Error ? error.message : String(error) })
   }
 })
 
 export default router
+
 
